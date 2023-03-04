@@ -28,6 +28,20 @@ def create_new_user_in_db(new_username, new_password, new_email):
             return True
 
 
+def login_against_db(submitted_username, submitted_password):
+    password_hash = create_new_hash(submitted_password)
+
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            login_validation_sql = 'SELECT username, email FROM users WHERE username = %s AND password_hash = %s'
+            data = (submitted_username, password_hash)
+            cur.execute(login_validation_sql, data)
+            result = cur.fetchone()
+            if result:
+                return result
+            return False
+
+
 def create_new_hash(original_string):
     return hashlib.sha256(original_string.encode("UTF-8")).hexdigest()
 
