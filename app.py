@@ -10,9 +10,9 @@ app = Flask(__name__)
 app.secret_key = os.environ['FLASK_SECRET_KEY']
 
 @app.route("/")
-def test_homepage():
+def index():
     if 'username' in session:
-        return f'<h1>hello {session["username"]}</p>'
+        return f'<h1>hello {session["username"]}!</p>'
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")
@@ -29,8 +29,7 @@ def do_the_login():
         session.permanent = False
         session["username"] = result[0]
         session["email"] = result[1]
-        return f"""<p>Logged in!</p>
-            <a href="/">Return home</a>"""
+        return redirect(url_for('index'))
     return "<p>login failed</p>"
 
 @app.get("/create-account")
