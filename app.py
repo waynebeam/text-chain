@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db
+from database import create_new_user_in_db, login_against_db
 
 load_dotenv()
 
@@ -12,7 +12,7 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 @app.route("/")
 def test_homepage():
     if 'username' in session:
-        return "<h1>hello User!</p>"
+        return f'<h1>hello {session["username"]}</p>'
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")
@@ -21,7 +21,17 @@ def show_login_form():
 
 @app.post("/login")
 def do_the_login():
-    return "<p>Got the login info! Processing.</p>"
+    data = request.form
+    username = data["username"]
+    password = data["password"]
+    result = login_against_db(username,password)
+    if result:
+        session.permanent = False
+        session["username"] = result[0]
+        session["email"] = result[1]
+        return f"""<p>Logged in!</p>
+            <a href="/">Return home</a>"""
+    return "<p>login failed</p>"
 
 @app.get("/create-account")
 def show_account_creation():
@@ -33,7 +43,9 @@ def create_new_account():
     username = data["username"]
     password = data["password"]
     email = data["email"]
-    if create_new_user_in_db(username,password,email):
-        return f"<p>Created successfully {username}!</p>"
+    result = create_new_user_in_db(username,password,email)
+    if result:
+        return f"""<p>Created successfully {username}!</p>
+         <a href="/">Return home</a>"""
     else:
         return "<p>Account creation unsuccessful</p>"
