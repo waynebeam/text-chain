@@ -17,3 +17,7 @@ def test_homepage():
 @app.get("/login")
 def show_login_form():
     return render_template("login.html")
+
+@app.post("/login")
+def do_the_login():
+    return "<p>Got the login info! Processing.</p>"
