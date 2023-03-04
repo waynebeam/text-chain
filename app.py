@@ -1,6 +1,7 @@
-from flask import Flask, session, render_template, redirect, url_for
+from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
+from database import create_new_user_in_db
 
 load_dotenv()
 
@@ -28,4 +29,11 @@ def show_account_creation():
 
 @app.post("/create-account")
 def create_new_account():
-    return "<p>New account created!</p>"
+    data = request.form
+    username = data["username"]
+    password = data["password"]
+    email = data["email"]
+    if create_new_user_in_db(username,password,email):
+        return f"<p>Created successfully {username}!</p>"
+    else:
+        return "<p>Account creation unsuccessful</p>"
