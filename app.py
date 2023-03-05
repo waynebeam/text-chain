@@ -12,7 +12,7 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 @app.route("/")
 def index():
     if 'username' in session:
-        return render_template('profile_homepage.html', username=session["username"])
+        return render_template('profile_homepage.html', session=session)
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")
@@ -54,3 +54,10 @@ def create_new_account():
          <a href="/">Return home</a>"""
     else:
         return "<p>Account creation unsuccessful</p>"
+
+
+@app.route("/create-thread")
+def create_new_thread():
+    if 'username' in session:
+        return render_template('create-thread.html', session=session)
+    return redirect(url_for('show_login_form'))
