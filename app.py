@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db
 
 load_dotenv()
 
@@ -65,4 +65,5 @@ def create_new_thread():
 @app.post("/create-thread")
 def save_new_thread():
     data = request.form
+    create_new_thread_on_db(session['user_id'],data["message-text"],data["next-user"])
     return "<p>Creating your new thread</p>"

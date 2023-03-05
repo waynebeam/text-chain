@@ -51,6 +51,16 @@ def find_threads_for_user(user_id):
                 return result
             return None
 
+def create_new_thread_on_db(user_id, text, next_user):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = "INSERT INTO messages(text, user_id, next_username) VALUES(%s, %s, %s) RETURNING id"
+            data = (text,user_id, next_user)
+            cur.execute(sql,data)
+            new_thread_id = cur.fetchone()[0]
+            set_thread_id_sql = "UPDATE messages SET thread_id = %s WHERE id = %s"
+            cur.execute(set_thread_id_sql, (new_thread_id,new_thread_id))
+
 def create_new_hash(original_string):
     return hashlib.sha256(original_string.encode("UTF-8")).hexdigest()
 
