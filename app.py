@@ -66,5 +66,9 @@ def create_new_thread():
 @app.post("/create-thread")
 def save_new_thread():
     data = request.form
-    create_new_thread_on_db(session['user_id'],data["message-text"],data["next-user"])
+    create_new_thread_on_db(data['user-id'],data["message-text"],data["next-user"])
     return "<p>Creating your new thread</p>"
+
+@app.route("/view-thread/<thread_id>")
+def view_thread(thread_id):
+    return render_template("view-thread.html", thread_id=thread_id)

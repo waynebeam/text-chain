@@ -51,6 +51,15 @@ def find_threads_for_user(user_id):
                 return result
             return None
 
+def retrieve_entire_thread(thread_id):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = 'SELECT text FROM messages WHERE thread_id = %s'
+            cur.execute(sql,thread_id)
+            return cur.fetchall()
+
+
+
 def create_new_thread_on_db(user_id, text, next_user):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:

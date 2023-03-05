@@ -14,7 +14,9 @@
     <h3>Your threads</h3>
         <ol>
             {% for thread in threads %}
-                <li>{{thread[0]}}</li>
+                <li>
+                    <a href="/view-thread/{{thread[1]}}">{{thread[0]}}</a>
+                </li>
             {% endfor %}
         </ol>
     {% endif %}
