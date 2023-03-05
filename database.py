@@ -45,3 +45,12 @@ def login_against_db(submitted_username, submitted_password):
 def create_new_hash(original_string):
     return hashlib.sha256(original_string.encode("UTF-8")).hexdigest()
 
+
+def test_db_access():
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = "INSERT INTO users(username, password_hash, email) VALUES(%s, %s, %s) RETURNING (id)"
+            data = ("test", "test again", "test")
+            cur.execute(sql,data)
+            print(cur.fetchone())
+
