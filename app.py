@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user
 
 load_dotenv()
 
@@ -12,7 +12,8 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 @app.route("/")
 def index():
     if 'username' in session:
-        return render_template('profile_homepage.html', session=session)
+        return render_template('profile_homepage.html', session=session,
+        threads=find_threads_for_user(str(session["user_id"])))
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")

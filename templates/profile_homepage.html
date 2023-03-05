@@ -10,5 +10,13 @@
     <a href="/logout">Logout</a>
     <h1>Welcome {{session['username']}}!</h1>
     <a href="/create-thread">Start a new thread</a>
+    {% if threads %}
+    <h3>Your threads</h3>
+        <ol>
+            {% for thread in threads %}
+                <li>{{thread[0]}}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
 </body>
 </html>

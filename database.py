@@ -44,7 +44,7 @@ def login_against_db(submitted_username, submitted_password):
 def find_threads_for_user(user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = 'SELECT DISTINCT ON(thread_id) text FROM messages WHERE user_id = %s'
+            sql = 'SELECT DISTINCT ON(thread_id) text, thread_id FROM messages WHERE user_id = %s'
             cur.execute(sql,user_id)
             result = cur.fetchall()
             if result:
