@@ -56,8 +56,13 @@ def create_new_account():
         return "<p>Account creation unsuccessful</p>"
 
 
-@app.route("/create-thread")
+@app.get("/create-thread")
 def create_new_thread():
     if 'username' in session:
         return render_template('create-thread.html', session=session)
     return redirect(url_for('show_login_form'))
+
+@app.post("/create-thread")
+def save_new_thread():
+    data = request.form
+    return "<p>Creating your new thread</p>"

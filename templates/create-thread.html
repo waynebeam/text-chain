@@ -8,5 +8,19 @@
 </head>
 <body>
     <p>Start a new thread here</p>
+    <fieldset>
+        <form action="/create-thread" method="post">
+            <label for="message-text">First message:</label>
+            <textarea placeholder="Enter your message. This will start the new thread" 
+            name="message-text" id="message-text"></textarea>
+            <br />
+            <br />
+            <label for="next-user">Who's up next?</label>
+            <input placeholder="who is next on the chain?" type="text" name="next-user" id="next-user">
+            <br />
+            <br />
+            <input type="submit">
+        </form>
+    </fieldset>
 </body>
 </html>
