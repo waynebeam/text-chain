@@ -12,7 +12,7 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 @app.route("/")
 def index():
     if 'username' in session:
-        return f'<h1>hello {session["username"]}!</p>'
+        return render_template('profile_homepage.html', username=session["username"])
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")
@@ -29,8 +29,14 @@ def do_the_login():
         session.permanent = False
         session["username"] = result[0]
         session["email"] = result[1]
+        session["user_id"] = result[2]
         return redirect(url_for('index'))
     return "<p>login failed</p>"
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 @app.get("/create-account")
 def show_account_creation():

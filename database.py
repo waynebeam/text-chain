@@ -33,7 +33,7 @@ def login_against_db(submitted_username, submitted_password):
 
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            login_validation_sql = 'SELECT username, email FROM users WHERE username = %s AND password_hash = %s'
+            login_validation_sql = 'SELECT username, email, id FROM users WHERE username = %s AND password_hash = %s'
             data = (submitted_username, password_hash)
             cur.execute(login_validation_sql, data)
             result = cur.fetchone()
