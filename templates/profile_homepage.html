@@ -18,7 +18,7 @@
                     <a href="/view-thread/{{thread[1]}}">{{thread[0]}}
                         {% if thread[4] == session['user_id'] %}
                             (YOUR TURN)
-                        {% elif (thread[2] < thread[3]) %}
+                        {% elif (thread[2] < thread[3] and thread[5] != session['user_id']) %}
                         (NEW UNREAD)
                         {% endif %}
                     </a>

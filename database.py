@@ -57,7 +57,8 @@ def find_threads_for_user(user_id):
                     data = cur.fetchall()
                     thread_length = len(data)
                     next_user_id = data[-1][2]
-                    text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length, next_user_id]
+                    last_writer_id = data[-2][2]
+                    text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length, next_user_id, last_writer_id]
                     result.append(text_id_length)
                 return result
             return None
