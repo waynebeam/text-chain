@@ -17,7 +17,11 @@
             </li>
         {%endfor%}
     </ol>
-    <p>Next up is {{next_user}}</p>
+    {% if next_user == username %}
+        You're up next!
+    {% else %}
+        <p>Next up is {{next_user}}</p>
+    {% endif %}
     
 </body>
 </html>
