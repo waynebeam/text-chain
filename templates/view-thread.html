@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <p>Viewing the thread with id {{thread_id}}</p>
+    <p>{{username}} viewing the thread with id {{thread_id}}</p>
     <ol>
         {% for message in thread %}
             <li>
@@ -17,6 +17,7 @@
             </li>
         {%endfor%}
     </ol>
+    <p>Next up is {{next_user}}</p>
     
 </body>
 </html>
