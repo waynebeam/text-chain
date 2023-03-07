@@ -77,4 +77,4 @@ def view_thread(thread_id):
         if session['username'] in thread_users:
             return render_template("view-thread.html", thread_id=thread_id, thread=thread[:-1],next_user=thread_users[-1],
             username=session['username'])
-    return redirect(url_for('index'))
+    return redirect(url_for('index')) 
