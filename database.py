@@ -116,6 +116,26 @@ def update_user_thread_status(user_id, thread_id, thread_length):
             insert_row_sql = 'INSERT INTO user_thread_status (user_id, thread_id, length_viewed) VALUES(%s, %s, %s)'
             cur.execute(insert_row_sql, [user_id,thread_id,thread_length])
 
+def add_blank_message_to_thread(thread_id, user_id):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = 'INSERT INTO messages(user_id, thread_id) VALUES(%s, %s)'
+            cur.execute(sql,[user_id,thread_id])
+
+def get_last_message_id(thread_id):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = 'SELECT id FROM messages WHERE thread_id = %s'
+            cur.execute(sql, [thread_id])
+            id = cur.fetchall()
+            return id[-1]
+
+def update_message_text(text, id):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            sql = 'UPDATE messages SET text = %s WHERE id = %s'
+            cur.execute(sql,[text, id])
+
 
 def create_new_hash(original_string):
     return hashlib.sha256(original_string.encode("UTF-8")).hexdigest()
@@ -129,3 +149,11 @@ def test_db_access():
             cur.execute(sql,data)
             print(cur.fetchone())
 
+
+# def access_db(func):
+#     def wrapper(*args, **kwargs):
+#         with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+#             with conn.cursor() as cur:
+#                 value = func(*args, **kwargs)
+#         return value
+#     return wrapper

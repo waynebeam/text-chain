@@ -21,6 +21,17 @@
     </ol>
     {% if next_user == username %}
         You're up next!
+        <!-- Here is where the form for adding a new message will go -->
+        <form method="post" action="/add-message">
+            <label for="text">Message</label>
+            <textarea name="text" id="text"></textarea>
+            <label for="next-user">Who's next?</label>
+            <input type="text" id="next-user" name="next-user">
+            <input type="hidden" name="username" value="{{username}}">
+            <input type="hidden" name="thread-id" value="{{thread_id}}">
+            <input type="hidden" name="thread-length" value="{{thread|count}}">
+            <input type="submit">
+        </form>
     {% else %}
         <p>Next up is {{next_user}}</p>
     {% endif %}

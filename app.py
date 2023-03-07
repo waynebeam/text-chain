@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status, add_blank_message_to_thread, get_last_message_id, update_message_text
 
 load_dotenv()
 
@@ -85,3 +85,17 @@ def view_thread(thread_id):
             return render_template("view-thread.html", thread_id=thread_id, thread=thread[:-1],next_user=thread_users[-1],
             username=session['username'])
     return redirect(url_for('index')) 
+
+@app.post("/add-message")
+def add_message():
+    data = request.form
+    user_id = get_id_from_username(data['username'])
+    next_user_id = get_id_from_username(data['next-user'])
+    thread_id = data['thread-id']
+    text = data['text']
+    thread_length = data['thread-length']
+    message_id = get_last_message_id(thread_id)
+    update_message_text(text, message_id)
+    add_blank_message_to_thread(thread_id,next_user_id)
+    update_user_thread_status(next_user_id,thread_id,thread_length)
+    return redirect(url_for('index'))
