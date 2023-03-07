@@ -44,9 +44,14 @@ def login_against_db(submitted_username, submitted_password):
 def find_threads_for_user(user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = 'SELECT DISTINCT ON(thread_id) text, thread_id FROM messages WHERE user_id = %s'
+            sql = 'SELECT DISTINCT thread_id FROM messages WHERE user_id = %s'
             cur.execute(sql,user_id)
-            result = cur.fetchall()
+            thread_ids = [t[0] for t in cur.fetchall()]
+            start_of_thread_sql = "SELECT text, thread_id FROM messages WHERE thread_id = %s LIMIT 1"
+            result = []
+            for id in thread_ids:
+                cur.execute(start_of_thread_sql, [id])
+                result.append(cur.fetchone())
             if result:
                 return result
             return None
@@ -59,12 +64,12 @@ def retrieve_entire_thread(thread_id):
             JOIN users ON (messages.user_id = users.id)
             WHERE thread_id = %s
             """
-            cur.execute(sql,thread_id)
+            cur.execute(sql,[thread_id])
             return cur.fetchall()
 
 
 
-def create_new_thread_on_db(user_id, text, next_user):
+def create_new_thread_on_db(user_id, text, next_user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
             sql = "INSERT INTO messages(text, user_id) VALUES(%s, %s) RETURNING id"
@@ -73,19 +78,22 @@ def create_new_thread_on_db(user_id, text, next_user):
             new_thread_id = cur.fetchone()[0]
             set_thread_id_sql = "UPDATE messages SET thread_id = %s WHERE id = %s"
             cur.execute(set_thread_id_sql, (new_thread_id,new_thread_id))
-            next_user_id = get_id_fron_username(next_user)
             #TODO need to check here for null if user is wrong
             next_message_sql = "INSERT INTO messages(user_id, thread_id) VALUES(%s, %s)"
             cur.execute(next_message_sql, (next_user_id,new_thread_id))
             #TODO this will return false or true and the app route will have to adjust
+            return new_thread_id
             
 
-def get_id_fron_username(username):
+def get_id_from_username(username):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
             sql = "SELECT id FROM users WHERE username = %s"
-            cur.execute(sql,username)
-            return cur.fetchone()
+            cur.execute(sql,(username,))
+            id = cur.fetchone()
+            if id:
+                return id
+            return False
 
 
 def create_new_hash(original_string):

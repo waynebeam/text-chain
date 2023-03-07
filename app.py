@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username
 
 load_dotenv()
 
@@ -66,8 +66,11 @@ def create_new_thread():
 @app.post("/create-thread")
 def save_new_thread():
     data = request.form
-    create_new_thread_on_db(data['user-id'],data["message-text"],data["next-user"])
-    return "<p>Creating your new thread</p>"
+    next_user_id = get_id_from_username(data['next-user'])
+    if next_user_id:
+        thread_id = create_new_thread_on_db(data['user-id'],data["message-text"],next_user_id)
+        return redirect(url_for("view_thread",thread_id=thread_id))
+    return "<p>That user doesn't exist</p>"
 
 @app.route("/view-thread/<thread_id>")
 def view_thread(thread_id):
