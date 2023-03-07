@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread
 
 load_dotenv()
 
@@ -71,4 +71,9 @@ def save_new_thread():
 
 @app.route("/view-thread/<thread_id>")
 def view_thread(thread_id):
-    return render_template("view-thread.html", thread_id=thread_id)
+    if 'username' in session:
+        thread = retrieve_entire_thread(thread_id)
+        thread_users = [user[1] for user in thread]
+        if session['username'] in thread_users:
+            return render_template("view-thread.html", thread_id=thread_id, thread=thread)
+    return redirect(url_for('index'))

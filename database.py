@@ -54,7 +54,11 @@ def find_threads_for_user(user_id):
 def retrieve_entire_thread(thread_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = 'SELECT text FROM messages WHERE thread_id = %s'
+            sql = """
+            SELECT messages.text, users.username, messages.next_username FROM messages
+            JOIN users ON (messages.user_id = users.id)
+            WHERE thread_id = %s
+            """
             cur.execute(sql,thread_id)
             return cur.fetchall()
 
