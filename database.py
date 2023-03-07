@@ -50,13 +50,14 @@ def find_threads_for_user(user_id):
             thread_ids = [t[0] for t in threads]
             viewed_lengths = [l[1] for l in threads]
             if thread_ids:
-                start_of_thread_sql = "SELECT text, thread_id FROM messages WHERE thread_id = %s"
+                start_of_thread_sql = "SELECT text, thread_id, user_id FROM messages WHERE thread_id = %s"
                 result = []
                 for i in range(len(thread_ids)):
                     cur.execute(start_of_thread_sql, [thread_ids[i]])
                     data = cur.fetchall()
                     thread_length = len(data)
-                    text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length]
+                    next_user_id = data[-1][2]
+                    text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length, next_user_id]
                     result.append(text_id_length)
                 return result
             return None
