@@ -11,11 +11,15 @@
     <h1>Welcome {{session['username']}}!</h1>
     <a href="/create-thread">Start a new thread</a>
     {% if threads %}
-    <h3>Your threads</h3>
+    <h3>Your threads:</h3>
         <ol>
             {% for thread in threads %}
                 <li>
-                    <a href="/view-thread/{{thread[1]}}">{{thread[0]}}</a>
+                    <a href="/view-thread/{{thread[1]}}">{{thread[0]}}
+                        {% if (thread[2] < thread[3]) %}
+                        (NEW UNREAD)
+                        {% endif %}
+                    </a>
                 </li>
             {% endfor %}
         </ol>

@@ -44,15 +44,20 @@ def login_against_db(submitted_username, submitted_password):
 def find_threads_for_user(user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = 'SELECT DISTINCT thread_id FROM messages WHERE user_id = %s'
+            sql = 'SELECT thread_id, length_viewed FROM user_thread_status WHERE user_id = %s'
             cur.execute(sql,user_id)
-            thread_ids = [t[0] for t in cur.fetchall()]
-            start_of_thread_sql = "SELECT text, thread_id FROM messages WHERE thread_id = %s LIMIT 1"
-            result = []
-            for id in thread_ids:
-                cur.execute(start_of_thread_sql, [id])
-                result.append(cur.fetchone())
-            if result:
+            threads = cur.fetchall()
+            thread_ids = [t[0] for t in threads]
+            viewed_lengths = [l[1] for l in threads]
+            if thread_ids:
+                start_of_thread_sql = "SELECT text, thread_id FROM messages WHERE thread_id = %s"
+                result = []
+                for i in range(len(thread_ids)):
+                    cur.execute(start_of_thread_sql, [thread_ids[i]])
+                    data = cur.fetchall()
+                    thread_length = len(data)
+                    text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length]
+                    result.append(text_id_length)
                 return result
             return None
 
@@ -94,6 +99,20 @@ def get_id_from_username(username):
             if id:
                 return id
             return False
+
+
+def update_user_thread_status(user_id, thread_id, thread_length):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            find_row_sql = 'SELECT id FROM user_thread_status WHERE user_id = %s AND thread_id = %s'
+            cur.execute(find_row_sql, [user_id, thread_id])
+            row_id = cur.fetchone()
+            if row_id:
+                update_row_sql = 'UPDATE user_thread_status SET length_viewed = %s WHERE id = %s'
+                cur.execute(update_row_sql, [thread_length, row_id])
+                return
+            insert_row_sql = 'INSERT INTO user_thread_status (user_id, thread_id, length_viewed) VALUES(%s, %s, %s)'
+            cur.execute(insert_row_sql, [user_id,thread_id,thread_length])
 
 
 def create_new_hash(original_string):

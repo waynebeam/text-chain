@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status
 
 load_dotenv()
 
@@ -12,8 +12,9 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 @app.route("/")
 def index():
     if 'username' in session:
+        text_id_viewed_length = find_threads_for_user(str(session["user_id"]))
         return render_template('profile_homepage.html', session=session,
-        threads=find_threads_for_user(str(session["user_id"])))
+        threads=text_id_viewed_length)
     return redirect(url_for('show_login_form'))
 
 @app.get("/login")
@@ -69,6 +70,8 @@ def save_new_thread():
     next_user_id = get_id_from_username(data['next-user'])
     if next_user_id:
         thread_id = create_new_thread_on_db(data['user-id'],data["message-text"],next_user_id)
+        update_user_thread_status(data['user-id'], thread_id,2)
+        update_user_thread_status(next_user_id,thread_id,0)
         return redirect(url_for("view_thread",thread_id=thread_id))
     return "<p>That user doesn't exist</p>"
 
@@ -78,6 +81,7 @@ def view_thread(thread_id):
         thread = retrieve_entire_thread(thread_id)
         thread_users = [user[1] for user in thread]
         if session['username'] in thread_users:
+            update_user_thread_status(get_id_from_username(session['username']),thread_id,len(thread))
             return render_template("view-thread.html", thread_id=thread_id, thread=thread[:-1],next_user=thread_users[-1],
             username=session['username'])
     return redirect(url_for('index')) 
