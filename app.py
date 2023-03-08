@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status, add_message_to_thread
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status, add_message_to_thread, get_username_from_id
 
 load_dotenv()
 
@@ -81,9 +81,10 @@ def view_thread(thread_id):
         thread = retrieve_entire_thread(thread_id)
         thread_users = [result[1] for result in thread]
         next_user_id = thread[-1][2]
+        next_user = get_username_from_id(next_user_id)[0]
         if session['username'] in thread_users or session['user_id'] == next_user_id:
             update_user_thread_status(get_id_from_username(session['username']),thread_id,len(thread))
-            return render_template("view-thread.html", thread_id=thread_id, thread=thread,next_user_id=next_user_id,
+            return render_template("view-thread.html", thread_id=thread_id, thread=thread,next_user_id=next_user_id, next_user=next_user,
             username=session['username'])
     return redirect(url_for('index')) 
 

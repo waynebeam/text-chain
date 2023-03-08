@@ -104,7 +104,9 @@ def get_id_from_username(username):
 def get_username_from_id(id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            pass
+            sql = "SELECT username FROM users WHERE id=%s"
+            cur.execute(sql, [id])
+            return cur.fetchone()
 
 
 def update_user_thread_status(user_id, thread_id, thread_length):
