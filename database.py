@@ -50,14 +50,14 @@ def find_threads_for_user(user_id):
             thread_ids = [t[0] for t in threads]
             viewed_lengths = [l[1] for l in threads]
             if thread_ids:
-                start_of_thread_sql = "SELECT text, thread_id, user_id FROM messages WHERE thread_id = %s"
+                start_of_thread_sql = "SELECT text, thread_id, user_id, next_user_id FROM messages WHERE thread_id = %s"
                 result = []
                 for i in range(len(thread_ids)):
                     cur.execute(start_of_thread_sql, [thread_ids[i]])
                     data = cur.fetchall()
                     thread_length = len(data)
-                    next_user_id = data[-1][2]
-                    last_writer_id = data[-2][2]
+                    next_user_id = data[-1][3]
+                    last_writer_id = data[-1][2]
                     text_id_length = [data[0][0], data[0][1], viewed_lengths[i], thread_length, next_user_id, last_writer_id]
                     result.append(text_id_length)
                 return result
@@ -67,7 +67,7 @@ def retrieve_entire_thread(thread_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
             sql = """
-            SELECT messages.text, users.username FROM messages
+            SELECT messages.text, users.username, messages.next_user_id FROM messages
             JOIN users ON (messages.user_id = users.id)
             WHERE thread_id = %s
             """
@@ -79,15 +79,14 @@ def retrieve_entire_thread(thread_id):
 def create_new_thread_on_db(user_id, text, next_user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = "INSERT INTO messages(text, user_id) VALUES(%s, %s) RETURNING id"
-            data = (text,user_id)
+            sql = "INSERT INTO messages(text, user_id, next_user_id) VALUES(%s, %s, %s) RETURNING id"
+            data = (text,user_id, next_user_id)
             cur.execute(sql,data)
             new_thread_id = cur.fetchone()[0]
             set_thread_id_sql = "UPDATE messages SET thread_id = %s WHERE id = %s"
             cur.execute(set_thread_id_sql, (new_thread_id,new_thread_id))
             #TODO need to check here for null if user is wrong
-            next_message_sql = "INSERT INTO messages(user_id, thread_id) VALUES(%s, %s)"
-            cur.execute(next_message_sql, (next_user_id,new_thread_id))
+            
             #TODO this will return false or true and the app route will have to adjust
             return new_thread_id
             
@@ -102,6 +101,11 @@ def get_id_from_username(username):
                 return id
             return False
 
+def get_username_from_id(id):
+    with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
+        with conn.cursor() as cur:
+            pass
+
 
 def update_user_thread_status(user_id, thread_id, thread_length):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
@@ -114,13 +118,13 @@ def update_user_thread_status(user_id, thread_id, thread_length):
                 cur.execute(update_row_sql, [thread_length, row_id])
                 return
             insert_row_sql = 'INSERT INTO user_thread_status (user_id, thread_id, length_viewed) VALUES(%s, %s, %s)'
-            cur.execute(insert_row_sql, [user_id,thread_id,thread_length])
+            cur.execute(insert_row_sql, [user_id,thread_id,0])
 
-def add_blank_message_to_thread(thread_id, user_id):
+def add_message_to_thread(text,thread_id, user_id, next_user_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:
         with conn.cursor() as cur:
-            sql = 'INSERT INTO messages(user_id, thread_id) VALUES(%s, %s)'
-            cur.execute(sql,[user_id,thread_id])
+            sql = 'INSERT INTO messages(text,user_id, thread_id, next_user_id) VALUES(%s, %s, %s, %s)'
+            cur.execute(sql,[text, user_id,thread_id, next_user_id])
 
 def get_last_message_id(thread_id):
     with psycopg2.connect(os.environ['DB_CONNECTION_STRING']) as conn:

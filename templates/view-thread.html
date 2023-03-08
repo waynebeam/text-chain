@@ -19,7 +19,7 @@
             </li>
         {%endfor%}
     </ol>
-    {% if next_user == username %}
+    {% if next_user_id == session['user_id'] %}
         You're up next!
         <!-- Here is where the form for adding a new message will go -->
         <form method="post" action="/add-message">
@@ -33,7 +33,7 @@
             <input type="submit">
         </form>
     {% else %}
-        <p>Next up is {{next_user}}</p>
+        <p>Next up is {{next_user_id}}</p>
     {% endif %}
     
 </body>

@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, redirect, url_for, request
 from dotenv import load_dotenv
 import os
-from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status, add_blank_message_to_thread, get_last_message_id, update_message_text
+from database import create_new_user_in_db, login_against_db, create_new_thread_on_db, find_threads_for_user,retrieve_entire_thread,get_id_from_username, update_user_thread_status, add_message_to_thread
 
 load_dotenv()
 
@@ -70,7 +70,7 @@ def save_new_thread():
     next_user_id = get_id_from_username(data['next-user'])
     if next_user_id:
         thread_id = create_new_thread_on_db(data['user-id'],data["message-text"],next_user_id)
-        update_user_thread_status(data['user-id'], thread_id,2)
+        update_user_thread_status(data['user-id'], thread_id,1)
         update_user_thread_status(next_user_id,thread_id,0)
         return redirect(url_for("view_thread",thread_id=thread_id))
     return "<p>That user doesn't exist</p>"
@@ -79,10 +79,11 @@ def save_new_thread():
 def view_thread(thread_id):
     if 'username' in session:
         thread = retrieve_entire_thread(thread_id)
-        thread_users = [user[1] for user in thread]
-        if session['username'] in thread_users:
+        thread_users = [result[1] for result in thread]
+        next_user_id = thread[-1][2]
+        if session['username'] in thread_users or session['user_id'] == next_user_id:
             update_user_thread_status(get_id_from_username(session['username']),thread_id,len(thread))
-            return render_template("view-thread.html", thread_id=thread_id, thread=thread[:-1],next_user=thread_users[-1],
+            return render_template("view-thread.html", thread_id=thread_id, thread=thread,next_user_id=next_user_id,
             username=session['username'])
     return redirect(url_for('index')) 
 
@@ -95,9 +96,7 @@ def add_message():
         thread_id = data['thread-id']
         text = data['text']
         thread_length = data['thread-length']
-        message_id = get_last_message_id(thread_id)
-        update_message_text(text, message_id)
-        add_blank_message_to_thread(thread_id,next_user_id)
+        add_message_to_thread(text,thread_id,user_id,next_user_id)   
         update_user_thread_status(next_user_id,thread_id,thread_length)
         return redirect(url_for('index'))
     return "<p>That user doesn't exist</p>"
